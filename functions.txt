@@ -1,0 +1,6 @@
+is_writeable(): Checks if a file can be written to
+is_readable(): Checks if a file can be read
+is_dir(): Checks if the file is a folder (directory)
+is_file(): Does the opposite of the one above
+scandir():Lists the contents of a directory
+filesize():Calculate the size of a file
