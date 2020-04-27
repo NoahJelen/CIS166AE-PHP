@@ -1,40 +1,55 @@
-<!doctype html>
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<title>Add A Quotation</title>
-</head>
-<body>
 <?php
 
-$file = '../quotes.txt';
+define('TITLE', 'Add a Quote');
+include('templates/header.html');
+
+print '<h2>Add a Quotation</h2>';
+
+if (!is_administrator()) {
+	print '<h2>Access Denied!</h2><p class="error">You do not have permission to access this page.</p>';
+	include('templates/footer.html');
+	exit();
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-	if ( !empty($_POST['quote']) && ($_POST['quote'] != 'Enter your quotation here.') ) {
-	
-		if (is_writable($file)) {
-			
-			file_put_contents($file, $_POST['quote'] . PHP_EOL, FILE_APPEND | LOCK_EX);
+	if ( !empty($_POST['quote']) && !empty($_POST['source']) ) {
 
-			print '<p>Your quotation has been stored.</p>';
-		
+		include('../mysqli_connect.php');
+
+		$quote = mysqli_real_escape_string($dbc, trim(strip_tags($_POST['quote'])));
+		$source = mysqli_real_escape_string($dbc, trim(strip_tags($_POST['source'])));
+
+		if (isset($_POST['favorite'])) {
+			$favorite = 1;
 		} else {
-			print '<p style="color: red;">Your quotation could not be stored due to a system error.</p>';
+			$favorite = 0;
 		}
-		
+
+		$query = "INSERT INTO quotes (quote, source, favorite) VALUES ('$quote', '$source', $favorite)";
+		mysqli_query($dbc, $query);
+
+		if (mysqli_affected_rows($dbc) == 1){
+			print '<p>Your quotation has been stored.</p>';
+		} else {
+			print '<p class="error">Could not store the quote because:<br>' . mysqli_error($dbc) . '.</p><p>The query being run was: ' . $query . '</p>';
+		}
+
+		mysqli_close($dbc);
+
 	} else {
-		print '<p style="color: red;">Please enter a quotation!</p>';
+		print '<p class="error">Please enter a quotation and a source!</p>';
 	}
-	
+
 }
 
 ?>
 
 <form action="add_quote.php" method="post">
-	<textarea name="quote" rows="5" cols="30">Enter your quotation here.</textarea><br>
-	<input type="submit" name="submit" value="Add This Quote!">
+	<p><label>Quote <textarea name="quote" rows="5" cols="30"></textarea></label></p>
+	<p><label>Source <input type="text" name="source"></label></p>
+	<p><label>Is this a favorite? <input type="checkbox" name="favorite" value="yes"></label></p>
+	<p><input type="submit" name="submit" value="Add This Quote!"></p>
 </form>
 
-</body>
-</html>
+<?php include('templates/footer.html'); ?>
