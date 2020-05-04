@@ -1,0 +1,13 @@
+.error {
+    color: red;
+}
+.container {
+  display: flex;
+}
+
+.container img {
+  margin-right: 10px;
+  display: block;
+}
+
+.container h1
